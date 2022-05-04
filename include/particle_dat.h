@@ -1,10 +1,12 @@
 #ifndef _PPMD_PARTICLE_DAT
 #define _PPMD_PARTICLE_DAT
 
+#include <string>
 
+class ParticleDatBase {};
 
 template<typename T>
-class ParticleDat {
+class ParticleDat : public ParticleDatBase {
   private:
 
   public:
