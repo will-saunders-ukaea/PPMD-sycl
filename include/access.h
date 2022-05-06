@@ -1,6 +1,8 @@
 #ifndef _PPMD_ACCESS
 #define _PPMD_ACCESS
 
+#include "typedefs.h"
+
 template <template <typename...> class T, typename U>
 class ColumnMajorColumnAccessor {
   private:

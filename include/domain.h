@@ -1,6 +1,8 @@
 #ifndef _PPMD_DOMAIN
 #define _PPMD_DOMAIN
 
+#include "typedefs.h"
+
 namespace PPMD {
 
 class Domain {};

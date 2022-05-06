@@ -3,6 +3,9 @@
 
 #include <CL/sycl.hpp>
 #include <mpi.h>
+
+#include "typedefs.h"
+
 using namespace cl;
 
 namespace PPMD {

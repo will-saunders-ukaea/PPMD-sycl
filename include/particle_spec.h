@@ -7,6 +7,8 @@
 #include <string>
 #include <vector>
 
+#include "typedefs.h"
+
 namespace PPMD {
 
 template <typename U> class Sym {

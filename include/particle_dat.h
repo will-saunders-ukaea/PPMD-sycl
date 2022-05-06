@@ -1,7 +1,15 @@
 #ifndef _PPMD_PARTICLE_DAT
 #define _PPMD_PARTICLE_DAT
 
+#include <CL/sycl.hpp>
 #include <memory>
+
+#include "typedefs.h"
+
+#include "access.h"
+#include "compute_target.h"
+#include "particle_set.h"
+#include "particle_spec.h"
 
 namespace PPMD {
 
@@ -12,7 +20,7 @@ template <typename T> class ParticleDatT {
     int npart_alloc;
 
   public:
-    const Sym<T> sym;
+    const PPMD::Sym<T> sym;
     const int ncomp;
     const bool positions;
     const std::string name;
@@ -55,7 +63,13 @@ template <typename T> ParticleDatShPtr<T> ParticleDat(ParticleProp<T> prop) {
 }
 
 template <typename T>
-void ParticleDatT<T>::append_particle_data(std::vector<T> &data) {}
+void ParticleDatT<T>::append_particle_data(std::vector<T> &data) {
+
+    // Assume values are in column major format in data
+    const int ncomp = data.size() / this->ncomp;
+
+    std::cout << "ncomp: " << ncomp << std::endl;
+}
 
 } // namespace PPMD
 

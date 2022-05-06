@@ -6,6 +6,14 @@
 #include <mpi.h>
 #include <string>
 
+#include "typedefs.h"
+#include "access.h"
+#include "compute_target.h"
+#include "domain.h"
+#include "particle_dat.h"
+#include "particle_set.h"
+#include "particle_spec.h"
+
 namespace PPMD {
 
 class ParticleGroup {

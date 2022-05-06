@@ -6,6 +6,11 @@
 #include <string>
 #include <vector>
 
+#include "typedefs.h"
+#include "access.h"
+#include "compute_target.h"
+#include "particle_spec.h"
+
 namespace PPMD {
 
 class ParticleSet {
