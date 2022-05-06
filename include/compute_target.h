@@ -11,18 +11,13 @@ class ComputeTarget {};
 
 class SYCLTarget : public ComputeTarget {
   private:
-
   public:
-
     sycl::device device;
     sycl::queue queue;
     MPI_Comm comm;
 
-    SYCLTarget(
-        const int gpu_device,
-        MPI_Comm comm
-    ){
-        if (gpu_device > 0){
+    SYCLTarget(const int gpu_device, MPI_Comm comm) {
+        if (gpu_device > 0) {
             try {
                 this->device = sycl::device(sycl::gpu_selector());
             } catch (sycl::exception const &e) {
@@ -34,15 +29,16 @@ class SYCLTarget : public ComputeTarget {
             this->device = sycl::device(sycl::cpu_selector());
         }
 
-        std::cout << "Using " << this->device.get_info<sycl::info::device::name>() << std::endl;
+        std::cout << "Using "
+                  << this->device.get_info<sycl::info::device::name>()
+                  << std::endl;
 
         this->queue = sycl::queue(this->device);
         this->comm = comm;
     }
-    ~SYCLTarget(){}
-
+    ~SYCLTarget() {}
 };
 
-}
+} // namespace PPMD
 
 #endif

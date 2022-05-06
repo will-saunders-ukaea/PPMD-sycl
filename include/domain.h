@@ -5,17 +5,13 @@ namespace PPMD {
 
 class Domain {};
 
-
 class DummyDomain : public Domain {
   private:
-
   public:
-
-    DummyDomain(){}
-    ~DummyDomain(){}
-
+    DummyDomain() {}
+    ~DummyDomain() {}
 };
 
-}
+} // namespace PPMD
 
 #endif
