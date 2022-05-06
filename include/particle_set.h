@@ -42,6 +42,9 @@ class ParticleSet {
     ){
         return ColumnMajorRowAccessor<std::vector, PPMD::INT>{values_int[sym], this->npart};
     };
+    
+    std::vector<PPMD::REAL>& get(Sym<PPMD::REAL>const& sym) {return values_real[sym];};
+    std::vector<PPMD::INT>& get(Sym<PPMD::INT>const& sym) {return values_int[sym];};
 
 };
 

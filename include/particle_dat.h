@@ -45,6 +45,7 @@ class ParticleDatT {
     int get_npart_local(const int npart_local){
         return this->npart_local;
     }
+    void append_particle_data(std::vector<T> &data);
 
 };
 
@@ -60,6 +61,14 @@ template <typename T>
 ParticleDatShPtr<T> ParticleDat(ParticleProp<T> prop){
     return std::make_shared<ParticleDatT<T>>(prop.sym, prop.ncomp, prop.positions);
 }
+
+template <typename T>
+void ParticleDatT<T>::append_particle_data(std::vector<T> &data){
+    
+}
+
+
+
 
 }
 

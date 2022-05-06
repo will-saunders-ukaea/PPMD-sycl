@@ -20,8 +20,8 @@ class ParticleGroup {
     Domain domain;
     ComputeTarget compute_target;
 
-    std::map<std::string, ParticleDatShPtr<PPMD::REAL>> particle_dats_real{};
-    std::map<std::string, ParticleDatShPtr<PPMD::INT>> particle_dats_int{};
+    std::map<PPMD::Sym<REAL>, ParticleDatShPtr<PPMD::REAL>> particle_dats_real{};
+    std::map<PPMD::Sym<INT>, ParticleDatShPtr<PPMD::INT>> particle_dats_int{};
 
     ParticleGroup(
         Domain domain,
@@ -43,8 +43,8 @@ class ParticleGroup {
     void add_particle_dat(ParticleDatShPtr<PPMD::INT> particle_dat);
 
     void add_particles();
-    template<typename U>
-    void add_particles(U particle_data);
+    template<typename U> void add_particles(U particle_data);
+    void add_particles_local(ParticleSet &particle_data);
 
 };
 
@@ -52,17 +52,16 @@ class ParticleGroup {
 void ParticleGroup::add_particle_dat(
     ParticleDatShPtr<PPMD::REAL> particle_dat
 ){
-    this->particle_dats_real[particle_dat->name] = particle_dat;
+    this->particle_dats_real[particle_dat->sym] = particle_dat;
     set_particle_dat_info(particle_dat);
 }
-
-
 void ParticleGroup::add_particle_dat(
     ParticleDatShPtr<PPMD::INT> particle_dat
 ){
-    this->particle_dats_int[particle_dat->name] = particle_dat;
+    this->particle_dats_int[particle_dat->sym] = particle_dat;
     set_particle_dat_info(particle_dat);
 }
+
 
 void ParticleGroup::add_particles(){
 };
@@ -70,6 +69,20 @@ template<typename U>
 void ParticleGroup::add_particles(U particle_data){
 
 };
+
+
+void ParticleGroup::add_particles_local(ParticleSet &particle_data){
+    for(auto const& dat : this->particle_dats_real){
+        dat.second->append_particle_data(particle_data.get(dat.first));
+    }
+
+
+}
+
+
+
+
+
 
 }
 

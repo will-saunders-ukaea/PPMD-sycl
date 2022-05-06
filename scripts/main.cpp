@@ -34,6 +34,10 @@ int main(int argc, char **argv){
     std::cout << initial_distribution[Sym<PPMD::INT>("ID")][0][0] << std::endl;
 
 
+
+    A.add_particles_local(initial_distribution);
+
+
     return 0;
 }
 
