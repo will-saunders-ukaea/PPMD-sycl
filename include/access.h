@@ -3,6 +3,8 @@
 
 #include "typedefs.h"
 
+namespace PPMD{
+
 template <template <typename...> class T, typename U>
 class ColumnMajorColumnAccessor {
   private:
@@ -33,5 +35,33 @@ class ColumnMajorRowAccessor {
         return ColumnMajorColumnAccessor<T, U>{this->base, this->stride, rowx};
     };
 };
+
+class AccessMode {
+};
+
+class READ : public AccessMode {
+
+};
+
+class WRITE : public AccessMode {
+
+};
+
+template<typename T>
+class Accessor {
+  private:
+    T* d_ptr;
+  public:
+
+    AccessMode mode;
+    Accessor(T* d_ptr, AccessMode mode) : d_ptr(d_ptr), mode(mode){}
+
+
+    T& operator[](int index) {
+        return this->d_ptr[index];
+    };
+
+};
+}
 
 #endif

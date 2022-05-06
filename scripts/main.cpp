@@ -33,6 +33,26 @@ int main(int argc, char **argv){
     A.add_particles_local(initial_distribution);
 
 
+    Accessor<PPMD::REAL> P = A[Sym<PPMD::REAL>("P")]->access(READ());
+    Accessor<PPMD::REAL> V = A[Sym<PPMD::REAL>("V")]->access(WRITE());
+
+
+    compute_target.queue.submit(
+        [&](sycl::handler& cgh) {
+
+            cgh.parallel_for<class addkernel>(
+                sycl::range<1>(A.get_npart_local()), [=](sycl::id<1> idx
+            ) {
+                
+                V[idx] = P[idx];
+
+            });
+
+
+        }
+    );
+
+    compute_target.queue.wait();
 
 
     return 0;

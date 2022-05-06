@@ -35,10 +35,10 @@ class ParticleGroup {
     ParticleGroup(Domain domain, ParticleSpec &particle_spec,
                   SYCLTarget sycl_target)
         : domain(domain), sycl_target(sycl_target) {
-        for (auto const &property : particle_spec.properties_real) {
+        for (auto &property : particle_spec.properties_real) {
             add_particle_dat(ParticleDat(property));
         }
-        for (auto const &property : particle_spec.properties_int) {
+        for (auto &property : particle_spec.properties_int) {
             add_particle_dat(ParticleDat(property));
         }
         this->npart_local = 0;
@@ -51,6 +51,16 @@ class ParticleGroup {
     void add_particles();
     template <typename U> void add_particles(U particle_data);
     void add_particles_local(ParticleSet &particle_data);
+
+    int get_npart_local() { return this->npart_local; }
+
+    ParticleDatShPtr<PPMD::REAL> &operator[](PPMD::Sym<PPMD::REAL> sym) {
+        return this->particle_dats_real.at(sym);
+    };
+    ParticleDatShPtr<PPMD::INT> &operator[](PPMD::Sym<PPMD::INT> sym) {
+        return this->particle_dats_int.at(sym);
+    };
+
 };
 
 void ParticleGroup::add_particle_dat(
@@ -73,14 +83,14 @@ void ParticleGroup::add_particles_local(ParticleSet &particle_data) {
     const int npart = particle_data.npart;
     const int npart_new = this->npart_local + npart;
 
-    for (auto const &dat : this->particle_dats_real) {
+    for (auto &dat : this->particle_dats_real) {
         dat.second->append_particle_data(npart,
                                          particle_data.contains(dat.first),
                                          particle_data.get(dat.first));
         PPMDASSERT(dat.second->get_npart_local() == npart_new,
                    "Appending particles failed.");
     }
-    for (auto const &dat : this->particle_dats_int) {
+    for (auto &dat : this->particle_dats_int) {
         dat.second->append_particle_data(npart,
                                          particle_data.contains(dat.first),
                                          particle_data.get(dat.first));

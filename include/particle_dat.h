@@ -53,6 +53,8 @@ template <typename T> class ParticleDatT {
 
     void realloc(const int npart_new);
     int get_npart_local() { return this->npart_local; }
+
+    Accessor<T> access(AccessMode mode){return Accessor<T>(this->d_ptr, mode);};
 };
 
 template <typename T> using ParticleDatShPtr = std::shared_ptr<ParticleDatT<T>>;
@@ -93,6 +95,8 @@ void ParticleDatT<T>::append_particle_data(const int npart_new,
 
     this->realloc(npart_new + this->npart_local);
     if (new_data_exists) {
+        PPMDASSERT(data.size() >= npart_new * this->ncomp,
+                   "Source vector too small");
         for (int cx = 0; cx < this->ncomp; cx++) {
             this->sycl_target.queue.memcpy(&this->d_ptr[cx * this->npart_local],
                                            &data.data()[cx * npart_new],
