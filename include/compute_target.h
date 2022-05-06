@@ -10,15 +10,14 @@ using namespace cl;
 
 namespace PPMD {
 
-class ComputeTarget {};
-
-class SYCLTarget : public ComputeTarget {
+class SYCLTarget {
   private:
   public:
     sycl::device device;
     sycl::queue queue;
     MPI_Comm comm;
 
+    SYCLTarget(){};
     SYCLTarget(const int gpu_device, MPI_Comm comm) {
         if (gpu_device > 0) {
             try {

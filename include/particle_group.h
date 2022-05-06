@@ -6,13 +6,13 @@
 #include <mpi.h>
 #include <string>
 
-#include "typedefs.h"
 #include "access.h"
 #include "compute_target.h"
 #include "domain.h"
 #include "particle_dat.h"
 #include "particle_set.h"
 #include "particle_spec.h"
+#include "typedefs.h"
 
 namespace PPMD {
 
@@ -20,26 +20,28 @@ class ParticleGroup {
   private:
     template <typename T>
     void set_particle_dat_info(ParticleDatShPtr<T> &particle_dat) {
-        particle_dat->set_compute_target(this->compute_target);
+        particle_dat->set_compute_target(this->sycl_target);
     }
+    int npart_local;
 
   public:
     Domain domain;
-    ComputeTarget compute_target;
+    SYCLTarget sycl_target;
 
     std::map<PPMD::Sym<REAL>, ParticleDatShPtr<PPMD::REAL>>
         particle_dats_real{};
     std::map<PPMD::Sym<INT>, ParticleDatShPtr<PPMD::INT>> particle_dats_int{};
 
     ParticleGroup(Domain domain, ParticleSpec &particle_spec,
-                  ComputeTarget compute_target)
-        : domain(domain), compute_target(compute_target) {
+                  SYCLTarget sycl_target)
+        : domain(domain), sycl_target(sycl_target) {
         for (auto const &property : particle_spec.properties_real) {
             add_particle_dat(ParticleDat(property));
         }
         for (auto const &property : particle_spec.properties_int) {
             add_particle_dat(ParticleDat(property));
         }
+        this->npart_local = 0;
     }
     ~ParticleGroup() {}
 
@@ -68,9 +70,24 @@ void ParticleGroup::add_particles(U particle_data){
 };
 
 void ParticleGroup::add_particles_local(ParticleSet &particle_data) {
+    const int npart = particle_data.npart;
+    const int npart_new = this->npart_local + npart;
+
     for (auto const &dat : this->particle_dats_real) {
-        dat.second->append_particle_data(particle_data.get(dat.first));
+        dat.second->append_particle_data(npart,
+                                         particle_data.contains(dat.first),
+                                         particle_data.get(dat.first));
+        PPMDASSERT(dat.second->get_npart_local() == npart_new,
+                   "Appending particles failed.");
     }
+    for (auto const &dat : this->particle_dats_int) {
+        dat.second->append_particle_data(npart,
+                                         particle_data.contains(dat.first),
+                                         particle_data.get(dat.first));
+        PPMDASSERT(dat.second->get_npart_local() == npart_new,
+                   "Appending particles failed.");
+    }
+    this->npart_local = npart_new;
 }
 
 } // namespace PPMD

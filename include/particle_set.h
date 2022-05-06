@@ -6,10 +6,10 @@
 #include <string>
 #include <vector>
 
-#include "typedefs.h"
 #include "access.h"
 #include "compute_target.h"
 #include "particle_spec.h"
+#include "typedefs.h"
 
 namespace PPMD {
 
@@ -53,6 +53,12 @@ class ParticleSet {
     std::vector<PPMD::INT> &get(Sym<PPMD::INT> const &sym) {
         return values_int[sym];
     };
+    bool contains(Sym<PPMD::REAL> const &sym) {
+        return (this->values_real.count(sym) > 0);
+    }
+    bool contains(Sym<PPMD::INT> const &sym) {
+        return (this->values_int.count(sym) > 0);
+    }
 };
 
 } // namespace PPMD

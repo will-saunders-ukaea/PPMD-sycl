@@ -4,12 +4,11 @@
 #include <CL/sycl.hpp>
 #include <memory>
 
-#include "typedefs.h"
-
 #include "access.h"
 #include "compute_target.h"
 #include "particle_set.h"
 #include "particle_spec.h"
+#include "typedefs.h"
 
 namespace PPMD {
 
@@ -25,29 +24,35 @@ template <typename T> class ParticleDatT {
     const bool positions;
     const std::string name;
 
-    ComputeTarget compute_target;
+    SYCLTarget sycl_target;
 
     ParticleDatT(const Sym<T> sym, int ncomp, bool positions = false)
         : sym(sym), name(sym.name), ncomp(ncomp), positions(positions) {
+        this->npart_local = 0;
         this->npart_alloc = 0;
+        this->d_ptr = NULL;
     }
-    ~ParticleDatT() {}
+    ~ParticleDatT() {
+        if (this->d_ptr != NULL) {
+            sycl::free(this->d_ptr, this->sycl_target.queue);
+        }
+        this->d_ptr = NULL;
+    }
 
-    void set_compute_target(ComputeTarget &compute_target) {
-        this->compute_target = compute_target;
+    void set_compute_target(SYCLTarget &sycl_target) {
+        this->sycl_target = sycl_target;
     }
     void set_npart_local(const int npart_local) {
         PPMDASSERT(npart_local >= 0, "npart_local is negative");
-
-        if (npart_local > this->npart_alloc) {
-            this->d_ptr = sycl::malloc_device<T>(npart_local * this->ncomp,
-                                                 this->compute_target->queue);
-            this->npart_alloc = npart_local;
-        }
+        this->realloc(npart_local);
         this->npart_local = npart_local;
     }
     int get_npart_local(const int npart_local) { return this->npart_local; }
-    void append_particle_data(std::vector<T> &data);
+    void append_particle_data(const int npart_new, const bool new_data_exists,
+                              std::vector<T> &data);
+
+    void realloc(const int npart_new);
+    int get_npart_local() { return this->npart_local; }
 };
 
 template <typename T> using ParticleDatShPtr = std::shared_ptr<ParticleDatT<T>>;
@@ -62,13 +67,45 @@ template <typename T> ParticleDatShPtr<T> ParticleDat(ParticleProp<T> prop) {
                                              prop.positions);
 }
 
+template <typename T> void ParticleDatT<T>::realloc(const int npart_new) {
+    if (npart_new > npart_alloc) {
+        T *d_ptr_new = sycl::malloc_device<T>(npart_new * this->ncomp,
+                                              this->sycl_target.queue);
+
+        for (int cx = 0; cx < this->ncomp; cx++) {
+            this->sycl_target.queue.memcpy(&d_ptr_new[cx * npart_new],
+                                           &d_ptr[cx * this->npart_local],
+                                           this->npart_local * sizeof(T));
+        }
+        this->sycl_target.queue.wait();
+        if (this->d_ptr != NULL) {
+            sycl::free(this->d_ptr, this->sycl_target.queue);
+        }
+        this->d_ptr = d_ptr_new;
+        this->npart_alloc = npart_local;
+    }
+}
+
 template <typename T>
-void ParticleDatT<T>::append_particle_data(std::vector<T> &data) {
+void ParticleDatT<T>::append_particle_data(const int npart_new,
+                                           const bool new_data_exists,
+                                           std::vector<T> &data) {
 
-    // Assume values are in column major format in data
-    const int ncomp = data.size() / this->ncomp;
-
-    std::cout << "ncomp: " << ncomp << std::endl;
+    this->realloc(npart_new + this->npart_local);
+    if (new_data_exists) {
+        for (int cx = 0; cx < this->ncomp; cx++) {
+            this->sycl_target.queue.memcpy(&this->d_ptr[cx * this->npart_local],
+                                           &data.data()[cx * npart_new],
+                                           npart_new * sizeof(T));
+        }
+    } else {
+        for (int cx = 0; cx < this->ncomp; cx++) {
+            this->sycl_target.queue.fill(&this->d_ptr[cx * this->npart_local],
+                                         ((T)0), npart_new);
+        }
+    }
+    this->sycl_target.queue.wait();
+    this->npart_local += npart_new;
 }
 
 } // namespace PPMD

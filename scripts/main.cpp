@@ -18,10 +18,7 @@ int main(int argc, char **argv){
     ParticleGroup A(domain, particle_spec, compute_target);
 
 
-    ////A.add_particle_dat(ParticleDat<PPMD::REAL>("P", 2, true));
-    ////A.add_particle_dat(ParticleDat<PPMD::REAL>("V", 3));
     A.add_particle_dat(ParticleDat(Sym<PPMD::REAL>("Q"), 1));
-    //A.add_particle_dat(ParticleDat<PPMD::INT>("ID", 1));
 
 
     ParticleSet initial_distribution(10, particle_spec);
@@ -33,9 +30,9 @@ int main(int argc, char **argv){
     initial_distribution[Sym<PPMD::INT>("ID")][0][0] = 100;
     std::cout << initial_distribution[Sym<PPMD::INT>("ID")][0][0] << std::endl;
 
-
-
     A.add_particles_local(initial_distribution);
+
+
 
 
     return 0;
