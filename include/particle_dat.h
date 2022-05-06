@@ -3,6 +3,7 @@
 
 #include <memory>
 
+namespace PPMD {
 
 template<typename T>
 class ParticleDatT {
@@ -12,13 +13,15 @@ class ParticleDatT {
     int npart_alloc;
 
   public:
+    const Sym<T> sym;
     const int ncomp;
     const bool positions;
+    const std::string name;
 
     ComputeTarget compute_target;
 
-    ParticleDatT(int ncomp, bool positions = false):
-        ncomp(ncomp), positions(positions)
+    ParticleDatT(const Sym<T> sym, int ncomp, bool positions = false):
+        sym(sym), name(sym.name), ncomp(ncomp), positions(positions)
     {
         this->npart_alloc = 0;
     }
@@ -50,10 +53,14 @@ template <typename T>
 using ParticleDatShPtr = std::shared_ptr<ParticleDatT<T>>;
 
 template <typename T>
-ParticleDatShPtr<T> ParticleDat(int ncomp, bool positions = false){
-    return std::make_shared<ParticleDatT<T>>(ncomp, positions);
+ParticleDatShPtr<T> ParticleDat(const PPMD::Sym<T> sym, int ncomp, bool positions = false){
+    return std::make_shared<ParticleDatT<T>>(sym.name, ncomp, positions);
+}
+template <typename T>
+ParticleDatShPtr<T> ParticleDat(ParticleProp<T> prop){
+    return std::make_shared<ParticleDatT<T>>(prop.sym, prop.ncomp, prop.positions);
 }
 
-
+}
 
 #endif

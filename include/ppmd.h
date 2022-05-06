@@ -6,7 +6,7 @@
 #include <iostream>
 
 using namespace cl;
-using namespace std;
+//using namespace std;
 
 namespace PPMD {
 
@@ -19,25 +19,26 @@ namespace PPMD {
         int line, 
         const char* msg
     ){
-    if (!expr)
-    {
-        std::cerr << "PPMD Assertion error:\t" << msg << "\n"
-            << "Expected value:\t" << expr_str << "\n"
-            << "Source location:\t\t" << file << ", line " << line << "\n";
-        abort();
+        if (!expr){
+            std::cerr << "PPMD Assertion error:\t" << msg << "\n"
+                << "Expected value:\t" << expr_str << "\n"
+                << "Source location:\t\t" << file << ", line " << line << "\n";
+            abort();
+        }
     }
-}
-
-
 
     typedef double REAL;
     typedef int64_t INT;
-    
-    #include "domain.h"
-    #include "compute_target.h"
-    #include "particle_dat.h"
-    #include "particle_group.h"
 
 }
+    
+#include "access.h"
+#include "domain.h"
+#include "compute_target.h"
+#include "particle_spec.h"
+#include "particle_set.h"
+#include "particle_dat.h"
+#include "particle_group.h"
+
 
 #endif

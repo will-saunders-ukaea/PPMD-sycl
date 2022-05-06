@@ -6,6 +6,8 @@
 #include <cstdint>
 #include <mpi.h>
 
+namespace PPMD {
+
 class ParticleGroup {
   private:
 
@@ -22,15 +24,23 @@ class ParticleGroup {
     std::map<std::string, ParticleDatShPtr<PPMD::INT>> particle_dats_int{};
 
     ParticleGroup(
-        Domain domain, 
+        Domain domain,
+        ParticleSpec& particle_spec,
         ComputeTarget compute_target
     ):
     domain(domain), compute_target(compute_target)
-    {}
+    {
+        for (auto const& property : particle_spec.properties_real){
+            add_particle_dat(ParticleDat(property));
+        }
+        for (auto const& property : particle_spec.properties_int){
+            add_particle_dat(ParticleDat(property));
+        }
+    }
     ~ParticleGroup(){}
     
-    void add_particle_dat(std::string name, ParticleDatShPtr<PPMD::REAL> particle_dat);
-    void add_particle_dat(std::string name, ParticleDatShPtr<PPMD::INT> particle_dat);
+    void add_particle_dat(ParticleDatShPtr<PPMD::REAL> particle_dat);
+    void add_particle_dat(ParticleDatShPtr<PPMD::INT> particle_dat);
 
     void add_particles();
     template<typename U>
@@ -40,19 +50,17 @@ class ParticleGroup {
 
 
 void ParticleGroup::add_particle_dat(
-    std::string name,
     ParticleDatShPtr<PPMD::REAL> particle_dat
 ){
-    this->particle_dats_real[name] = particle_dat;
+    this->particle_dats_real[particle_dat->name] = particle_dat;
     set_particle_dat_info(particle_dat);
 }
 
 
 void ParticleGroup::add_particle_dat(
-    std::string name,
     ParticleDatShPtr<PPMD::INT> particle_dat
 ){
-    this->particle_dats_int[name] = particle_dat;
+    this->particle_dats_int[particle_dat->name] = particle_dat;
     set_particle_dat_info(particle_dat);
 }
 
@@ -63,6 +71,6 @@ void ParticleGroup::add_particles(U particle_data){
 
 };
 
-
+}
 
 #endif

@@ -1,6 +1,7 @@
 #ifndef _PPMD_DOMAIN
 #define _PPMD_DOMAIN
 
+namespace PPMD {
 
 class Domain {};
 
@@ -14,5 +15,7 @@ class DummyDomain : public Domain {
     ~DummyDomain(){}
 
 };
+
+}
 
 #endif

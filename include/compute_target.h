@@ -5,6 +5,8 @@
 #include <mpi.h>
 using namespace cl;
 
+namespace PPMD {
+
 class ComputeTarget {};
 
 class SYCLTarget : public ComputeTarget {
@@ -41,5 +43,6 @@ class SYCLTarget : public ComputeTarget {
 
 };
 
+}
 
 #endif
