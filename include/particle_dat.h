@@ -14,11 +14,12 @@ namespace PPMD {
 
 template <typename T> class ParticleDatT {
   private:
-    T *d_ptr;
     int npart_local;
     int npart_alloc;
 
   public:
+    // TODO make this pointer private
+    T *d_ptr;
     const PPMD::Sym<T> sym;
     const int ncomp;
     const bool positions;
@@ -54,7 +55,9 @@ template <typename T> class ParticleDatT {
     void realloc(const int npart_new);
     int get_npart_local() { return this->npart_local; }
 
-    Accessor<T> access(AccessMode mode){return Accessor<T>(this->d_ptr, mode);};
+    Accessor<T> access(AccessMode mode) {
+        return Accessor<T>(this->d_ptr, mode, this->npart_alloc);
+    };
 };
 
 template <typename T> using ParticleDatShPtr = std::shared_ptr<ParticleDatT<T>>;
@@ -84,7 +87,7 @@ template <typename T> void ParticleDatT<T>::realloc(const int npart_new) {
             sycl::free(this->d_ptr, this->sycl_target.queue);
         }
         this->d_ptr = d_ptr_new;
-        this->npart_alloc = npart_local;
+        this->npart_alloc = npart_new;
     }
 }
 
@@ -98,13 +101,13 @@ void ParticleDatT<T>::append_particle_data(const int npart_new,
         PPMDASSERT(data.size() >= npart_new * this->ncomp,
                    "Source vector too small");
         for (int cx = 0; cx < this->ncomp; cx++) {
-            this->sycl_target.queue.memcpy(&this->d_ptr[cx * this->npart_local],
+            this->sycl_target.queue.memcpy(&this->d_ptr[cx * this->npart_alloc],
                                            &data.data()[cx * npart_new],
                                            npart_new * sizeof(T));
         }
     } else {
         for (int cx = 0; cx < this->ncomp; cx++) {
-            this->sycl_target.queue.fill(&this->d_ptr[cx * this->npart_local],
+            this->sycl_target.queue.fill(&this->d_ptr[cx * this->npart_alloc],
                                          ((T)0), npart_new);
         }
     }

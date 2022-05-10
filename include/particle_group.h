@@ -60,7 +60,6 @@ class ParticleGroup {
     ParticleDatShPtr<PPMD::INT> &operator[](PPMD::Sym<PPMD::INT> sym) {
         return this->particle_dats_int.at(sym);
     };
-
 };
 
 void ParticleGroup::add_particle_dat(

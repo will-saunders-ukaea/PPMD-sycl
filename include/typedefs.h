@@ -4,6 +4,8 @@
 #include <cstdint>
 #include <iostream>
 
+#define RESTRICT __restrict
+
 namespace PPMD {
 
 #define PPMDASSERT(expr, msg)                                                  \

@@ -3,6 +3,7 @@
 
 #include "access.h"
 #include "compute_target.h"
+#include "cell_dat.h"
 #include "domain.h"
 #include "particle_dat.h"
 #include "particle_group.h"
