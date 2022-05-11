@@ -1,5 +1,5 @@
 
-MPI_CFLAGS:= -Wl,-Bsymbolic-functions -Wl,-z,relro -I/usr/include/x86_64-linux-gnu/mpich -L/usr/lib/x86_64-linux-gnu -lmpich
+MPI_CFLAGS:= -Wl,-Bsymbolic-functions -Wl,-z,relro -I/usr/include/x86_64-linux-gnu/mpich -L/usr/lib/x86_64-linux-gnu -lmpich -g
 LIBS:=
 
 HIPSYCL:=syclcc --hipsycl-targets=omp -DGPU_SELECTOR=0

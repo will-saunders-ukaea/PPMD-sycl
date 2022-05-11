@@ -65,7 +65,7 @@ TEST_CASE("test_cell_dat_const_1") {
     }
 }
 
-TEST_CASE("test_cell_dat_1") {
+TEST_CASE("test_cell_dat_REAL_1") {
 
     SYCLTarget sycl_target{GPU_SELECTOR, MPI_COMM_WORLD};
 
@@ -118,6 +118,74 @@ TEST_CASE("test_cell_dat_1") {
     index = 0.0;
     for (int cellx = 0; cellx < cell_count; cellx++) {
         CellData<PPMD::REAL> cd = ddc.get_cell(cellx);
+
+        const int nrow = ddc.nrow[cellx];
+        REQUIRE(cd->nrow == nrow);
+        REQUIRE(cd->ncol == ddc.ncol);
+
+        const int nrow0 = nrows_0[cellx];
+
+        for (int rowx = 0; rowx < nrow0; rowx++) {
+            for (int colx = 0; colx < ncol; colx++) {
+                REQUIRE(cd->data[colx][rowx] == ++index);
+            }
+        }
+    }
+}
+
+TEST_CASE("test_cell_dat_INT_1") {
+
+    SYCLTarget sycl_target{GPU_SELECTOR, MPI_COMM_WORLD};
+
+    const int cell_count = 4;
+    const int ncol = 2;
+
+    CellDat<PPMD::INT> ddc(sycl_target, cell_count, ncol);
+
+    // set some row counts
+    std::vector<PPMD::INT> nrows_0(cell_count);
+    for (int cellx = 0; cellx < cell_count; cellx++) {
+        const int cellx_nrow = cellx + 1;
+        nrows_0[cellx] = cellx_nrow;
+        ddc.set_nrow(cellx, cellx_nrow);
+
+        // check enough space was allocated
+        REQUIRE(ddc.nrow_alloc[cellx] >= nrows_0[cellx]);
+        REQUIRE(ddc.nrow[cellx] == nrows_0[cellx]);
+    }
+
+    PPMD::INT index = 0;
+    for (int cellx = 0; cellx < cell_count; cellx++) {
+        CellData<PPMD::INT> cd = ddc.get_cell(cellx);
+
+        const int nrow = ddc.nrow[cellx];
+        REQUIRE(cd->nrow == nrow);
+        REQUIRE(cd->ncol == ddc.ncol);
+
+        for (int rowx = 0; rowx < nrow; rowx++) {
+            for (int colx = 0; colx < ncol; colx++) {
+                cd->data[colx][rowx] = ++index;
+            }
+        }
+
+        ddc.set_cell(cellx, cd);
+    }
+
+    // set some new row counts
+    std::vector<PPMD::INT> nrows_1(cell_count);
+    for (int cellx = 0; cellx < cell_count; cellx++) {
+        const int cellx_nrow = (cellx + 1) * 2;
+        nrows_1[cellx] = cellx_nrow;
+        ddc.set_nrow(cellx, cellx_nrow);
+
+        // check enough space was allocated
+        REQUIRE(ddc.nrow_alloc[cellx] >= nrows_1[cellx]);
+        REQUIRE(ddc.nrow[cellx] == nrows_1[cellx]);
+    }
+
+    index = 0;
+    for (int cellx = 0; cellx < cell_count; cellx++) {
+        CellData<PPMD::INT> cd = ddc.get_cell(cellx);
 
         const int nrow = ddc.nrow[cellx];
         REQUIRE(cd->nrow == nrow);

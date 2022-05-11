@@ -21,14 +21,22 @@ template <typename T> class ParticleDatT {
     // TODO make this pointer private
     T *d_ptr;
     const PPMD::Sym<T> sym;
+    CellDat<T> cell_dat;
     const int ncomp;
+    const int ncell;
     const bool positions;
     const std::string name;
 
-    SYCLTarget sycl_target;
+    SYCLTarget &sycl_target;
 
-    ParticleDatT(const Sym<T> sym, int ncomp, bool positions = false)
-        : sym(sym), name(sym.name), ncomp(ncomp), positions(positions) {
+    ParticleDatT(SYCLTarget &sycl_target, const Sym<T> sym, int ncomp,
+                 int ncell, bool positions = false)
+        : sycl_target(sycl_target), sym(sym), name(sym.name), ncomp(ncomp),
+          ncell(ncell), positions(positions),
+          cell_dat(CellDat<T>(sycl_target, ncell, ncomp)) {
+
+        auto d = this->sycl_target.queue.get_device();
+
         this->npart_local = 0;
         this->npart_alloc = 0;
         this->d_ptr = NULL;
@@ -51,8 +59,11 @@ template <typename T> class ParticleDatT {
     int get_npart_local(const int npart_local) { return this->npart_local; }
     void append_particle_data(const int npart_new, const bool new_data_exists,
                               std::vector<T> &data);
-
+    void append_particle_data(const int npart_new, const bool new_data_exists,
+                              std::vector<PPMD::INT> &cells,
+                              std::vector<T> &data);
     void realloc(const int npart_new);
+    void realloc(std::vector<PPMD::INT> &npart_cell_new);
     int get_npart_local() { return this->npart_local; }
 
     Accessor<T> access(AccessMode mode) {
@@ -63,13 +74,16 @@ template <typename T> class ParticleDatT {
 template <typename T> using ParticleDatShPtr = std::shared_ptr<ParticleDatT<T>>;
 
 template <typename T>
-ParticleDatShPtr<T> ParticleDat(const PPMD::Sym<T> sym, int ncomp,
-                                bool positions = false) {
-    return std::make_shared<ParticleDatT<T>>(sym.name, ncomp, positions);
+ParticleDatShPtr<T> ParticleDat(SYCLTarget &sycl_target, const PPMD::Sym<T> sym,
+                                int ncomp, int ncell, bool positions = false) {
+    return std::make_shared<ParticleDatT<T>>(sycl_target, sym, ncomp, ncell,
+                                             positions);
 }
-template <typename T> ParticleDatShPtr<T> ParticleDat(ParticleProp<T> prop) {
-    return std::make_shared<ParticleDatT<T>>(prop.sym, prop.ncomp,
-                                             prop.positions);
+template <typename T>
+ParticleDatShPtr<T> ParticleDat(SYCLTarget &sycl_target, ParticleProp<T> prop,
+                                int ncell) {
+    return std::make_shared<ParticleDatT<T>>(sycl_target, prop.sym, prop.ncomp,
+                                             ncell, prop.positions);
 }
 
 template <typename T> void ParticleDatT<T>::realloc(const int npart_new) {
@@ -88,6 +102,15 @@ template <typename T> void ParticleDatT<T>::realloc(const int npart_new) {
         }
         this->d_ptr = d_ptr_new;
         this->npart_alloc = npart_new;
+    }
+}
+
+template <typename T>
+void ParticleDatT<T>::realloc(std::vector<PPMD::INT> &npart_cell_new) {
+    PPMDASSERT(npart_cell_new.size() >= this->ncell,
+               "Insufficent new cell counts");
+    for (int cellx = 0; cellx < this->ncell; cellx++) {
+        this->cell_dat.set_nrow(cellx, npart_cell_new[cellx]);
     }
 }
 
@@ -113,6 +136,22 @@ void ParticleDatT<T>::append_particle_data(const int npart_new,
     }
     this->sycl_target.queue.wait();
     this->npart_local += npart_new;
+}
+
+template <typename T>
+void ParticleDatT<T>::append_particle_data(const int npart_new,
+                                           const bool new_data_exists,
+                                           std::vector<PPMD::INT> &cells,
+                                           std::vector<T> &data) {
+
+    if (new_data_exists) {
+        PPMDASSERT(data.size() >= npart_new * this->ncomp,
+                   "Source vector too small");
+
+    } else {
+    }
+
+    this->sycl_target.queue.wait();
 }
 
 } // namespace PPMD

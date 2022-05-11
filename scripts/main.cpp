@@ -3,57 +3,40 @@
 
 using namespace PPMD;
 
-int main(int argc, char **argv){
+int main(int argc, char **argv) {
 
     SYCLTarget sycl_target{GPU_SELECTOR, MPI_COMM_WORLD};
 
-    const int cell_count = 8;
+    const int cell_count = 5;
     Mesh mesh(cell_count);
     Domain domain(mesh);
 
     CellDatConst<PPMD::INT> c_occupancy(sycl_target, cell_count, 1, 1);
     CellDat<PPMD::REAL> c_particle_pos(sycl_target, cell_count, 2);
-    
-    return 0;
-    CellData<PPMD::INT> CO_0 = c_occupancy.get_cell(0);
-    std::cout << CO_0->data[0][0] << std::endl;
 
-    CO_0->data[0][0] = 10;
-    c_occupancy.set_cell(0, CO_0);
+    ParticleSpec particle_spec{ParticleProp(Sym<PPMD::REAL>("P"), 2, true),
+                               ParticleProp(Sym<PPMD::REAL>("V"), 3),
+                               ParticleProp(Sym<PPMD::INT>("CELL_ID"), 1, true),
+                               ParticleProp(Sym<PPMD::INT>("ID"), 1)};
 
-    CO_0 = c_occupancy.get_cell(0);
-    std::cout << CO_0->data[0][0] << std::endl;
-    
-
-
-    
-
-    ParticleSpec particle_spec{
-        ParticleProp(Sym<PPMD::REAL>("P"), 2, true),
-        ParticleProp(Sym<PPMD::REAL>("V"), 3),
-        ParticleProp(Sym<PPMD::INT>("ID"), 1)
-    };
-    
     ParticleGroup A(domain, particle_spec, sycl_target);
-
-
-    A.add_particle_dat(ParticleDat(Sym<PPMD::REAL>("Q"), 1));
-
 
     const int N = 10;
     ParticleSet initial_distribution(N, particle_spec);
-    for(int px=0 ; px<N ; px++){
-        for(int dimx=0 ; dimx<2 ; dimx++){
-            initial_distribution[Sym<PPMD::REAL>("P")][px][dimx] = (double) ((px * 2 ) + (dimx));
-            std::cout << (double) ((px * 2 ) + (dimx)) << std::endl;
+    for (int px = 0; px < N; px++) {
+        for (int dimx = 0; dimx < 2; dimx++) {
+            initial_distribution[Sym<PPMD::REAL>("P")][px][dimx] =
+                (double)((px * 2) + (dimx));
+            std::cout << (double)((px * 2) + (dimx)) << std::endl;
         }
     }
 
     std::cout << "---------------" << std::endl;
 
-    for(int px=0 ; px<N ; px++){
-        for(int dimx=0 ; dimx<2 ; dimx++){
-            std::cout << initial_distribution[Sym<PPMD::REAL>("P")][px][dimx] << std::endl;
+    for (int px = 0; px < N; px++) {
+        for (int dimx = 0; dimx < 2; dimx++) {
+            std::cout << initial_distribution[Sym<PPMD::REAL>("P")][px][dimx]
+                      << std::endl;
         }
     }
 
@@ -61,8 +44,8 @@ int main(int argc, char **argv){
 
     A.add_particles_local(initial_distribution);
 
-
-    //ParticleLoop(
+    return 0;
+    // ParticleLoop(
     //    A[Sym<PPMD::REAL>("P")]->access(READ()),
     //    A[Sym<PPMD::REAL>("V")]->access(WRITE()),
     //    [](
@@ -73,10 +56,9 @@ int main(int argc, char **argv){
     //    ) {
     //            V[idx][0] = P[idx][0];
     //            V[idx][1] = P[idx][1];
-    //            V[idx][2] = 3.0;           
+    //            V[idx][2] = 3.0;
     //    }
     //)
-
 
     /*
     Accessor<PPMD::REAL> P = A[Sym<PPMD::REAL>("P")]->access(READ());
@@ -94,7 +76,7 @@ int main(int argc, char **argv){
             cgh.parallel_for<class addkernel>(
                 sycl::range<1>(A.get_npart_local()), [=](sycl::id<1> idx
             ) {
-                
+
                 V[idx][0] = P[idx][0];
                 V[idx][1] = P[idx][1];
                 V[idx][2] = 3.0;
@@ -111,18 +93,18 @@ int main(int argc, char **argv){
 
     std::cout << "---------------" << std::endl;
 
-    for(int px=0 ; px<N ; px++){
-        for(int dimx=0 ; dimx<2 ; dimx++){
-            std::cout << initial_distribution[Sym<PPMD::REAL>("P")][px][dimx] << std::endl;
+    for (int px = 0; px < N; px++) {
+        for (int dimx = 0; dimx < 2; dimx++) {
+            std::cout << initial_distribution[Sym<PPMD::REAL>("P")][px][dimx]
+                      << std::endl;
         }
     }
 
     std::cout << "---------------" << std::endl;
 
-    for(int px=0 ; px<A.get_npart_local() ; px++){
+    for (int px = 0; px < A.get_npart_local(); px++) {
         std::cout << A[Sym<PPMD::REAL>("V")]->d_ptr[px] << std::endl;
     }
-
 
     return 0;
 }

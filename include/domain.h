@@ -16,12 +16,10 @@ class Mesh {
 
 class Domain {
   private:
-    Mesh &mesh;
-
   public:
+    Mesh &mesh;
     Domain(Mesh &mesh) : mesh(mesh) {}
     ~Domain() {}
-    Mesh &get_mesh() { return this->mesh; };
 };
 
 } // namespace PPMD
