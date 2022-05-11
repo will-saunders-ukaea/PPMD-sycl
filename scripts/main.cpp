@@ -5,14 +5,16 @@ using namespace PPMD;
 
 int main(int argc, char **argv){
 
-    SYCLTarget sycl_target{0, MPI_COMM_WORLD};
+    SYCLTarget sycl_target{GPU_SELECTOR, MPI_COMM_WORLD};
 
-    Mesh mesh(4);
+    const int cell_count = 8;
+    Mesh mesh(cell_count);
     Domain domain(mesh);
 
-    CellDatConst<PPMD::INT> c_occupancy(sycl_target, mesh, 1, 1);
-    CellDat<PPMD::REAL> c_particle_pos(sycl_target, mesh, c_occupancy, 2);
+    CellDatConst<PPMD::INT> c_occupancy(sycl_target, cell_count, 1, 1);
+    CellDat<PPMD::REAL> c_particle_pos(sycl_target, cell_count, 2);
     
+    return 0;
     CellData<PPMD::INT> CO_0 = c_occupancy.get_cell(0);
     std::cout << CO_0->data[0][0] << std::endl;
 
@@ -22,10 +24,7 @@ int main(int argc, char **argv){
     CO_0 = c_occupancy.get_cell(0);
     std::cout << CO_0->data[0][0] << std::endl;
     
-    c_particle_pos.realloc();
 
-
-    return 0;
 
     
 
@@ -127,5 +126,3 @@ int main(int argc, char **argv){
 
     return 0;
 }
-
-
