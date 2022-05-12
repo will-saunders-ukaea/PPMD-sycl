@@ -17,9 +17,13 @@ int main(int argc, char **argv) {
     ParticleSpec particle_spec{ParticleProp(Sym<PPMD::REAL>("P"), 2, true),
                                ParticleProp(Sym<PPMD::REAL>("V"), 3),
                                ParticleProp(Sym<PPMD::INT>("CELL_ID"), 1, true),
-                               ParticleProp(Sym<PPMD::INT>("ID"), 1)};
+                               ParticleProp(Sym<PPMD::INT>("ID"), 1)
+                               };
 
     ParticleGroup A(domain, particle_spec, sycl_target);
+
+
+    A.add_particle_dat(ParticleDat(sycl_target, ParticleProp(Sym<PPMD::REAL>("FOO"), 3), cell_count));
 
     const int N = 10;
     ParticleSet initial_distribution(N, particle_spec);

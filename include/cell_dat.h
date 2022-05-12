@@ -203,6 +203,7 @@ template <typename T> class CellDat {
             this->sycl_target.queue.wait();
         }
     }
+    T ***device_ptr() { return this->d_ptr; };
 };
 
 } // namespace PPMD

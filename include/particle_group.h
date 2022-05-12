@@ -123,19 +123,20 @@ void ParticleGroup::add_particles_local(ParticleSet &particle_data) {
         dat.second->append_particle_data(npart,
                                          particle_data.contains(dat.first),
                                          cellids, particle_data.get(dat.first));
-        PPMDASSERT(dat.second->get_npart_local() == npart_new,
-                   "Appending particles failed.");
     }
+
     for (auto &dat : this->particle_dats_int) {
         dat.second->realloc(this->npart_cell_tmp);
 
         dat.second->append_particle_data(npart,
                                          particle_data.contains(dat.first),
                                          cellids, particle_data.get(dat.first));
-        PPMDASSERT(dat.second->get_npart_local() == npart_new,
-                   "Appending particles failed.");
     }
+
     this->npart_local = npart_new;
+
+    // The append is async
+    this->sycl_target.queue.wait();
 }
 
 } // namespace PPMD

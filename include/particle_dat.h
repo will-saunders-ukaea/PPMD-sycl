@@ -20,6 +20,7 @@ template <typename T> class ParticleDatT {
   public:
     // TODO make this pointer private
     T *d_ptr;
+    int *s_npart_cell;
     const PPMD::Sym<T> sym;
     CellDat<T> cell_dat;
     const int ncomp;
@@ -35,17 +36,22 @@ template <typename T> class ParticleDatT {
           ncell(ncell), positions(positions),
           cell_dat(CellDat<T>(sycl_target, ncell, ncomp)) {
 
-        auto d = this->sycl_target.queue.get_device();
-
         this->npart_local = 0;
         this->npart_alloc = 0;
         this->d_ptr = NULL;
+
+        this->s_npart_cell =
+            sycl::malloc_shared<int>(this->ncell, this->sycl_target.queue);
+        for (int cellx = 0; cellx < this->ncell; cellx++) {
+            this->s_npart_cell[cellx] = 0;
+        }
     }
     ~ParticleDatT() {
         if (this->d_ptr != NULL) {
             sycl::free(this->d_ptr, this->sycl_target.queue);
         }
         this->d_ptr = NULL;
+        sycl::free(this->s_npart_cell, this->sycl_target.queue);
     }
 
     void set_compute_target(SYCLTarget &sycl_target) {
@@ -138,20 +144,70 @@ void ParticleDatT<T>::append_particle_data(const int npart_new,
     this->npart_local += npart_new;
 }
 
+/*
+ *  Append particle data to the ParticleDat. wait() must be called on the queue
+ *  before use of the data.
+ *
+ */
 template <typename T>
 void ParticleDatT<T>::append_particle_data(const int npart_new,
                                            const bool new_data_exists,
                                            std::vector<PPMD::INT> &cells,
                                            std::vector<T> &data) {
 
+    PPMDASSERT(npart_new <= cells.size(), "incorrect number of cells");
+
+    const size_t size_npart_new = static_cast<size_t>(npart_new);
+    int *s_npart_cell = this->s_npart_cell;
+    const int ncell = this->ncell;
+    const int ncomp = this->ncomp;
+    T ***d_cell_dat_ptr = this->cell_dat.device_ptr();
+
+    sycl::buffer<PPMD::INT, 1> b_cells(cells.data(),
+                                       sycl::range<1>{size_npart_new});
+
     if (new_data_exists) {
-        PPMDASSERT(data.size() >= npart_new * this->ncomp,
-                   "Source vector too small");
+        sycl::buffer<T, 1> b_data(data.data(),
+                                  sycl::range<1>{size_npart_new * this->ncomp});
+        this->sycl_target.queue.submit([&](sycl::handler &cgh) {
+            auto a_cells = b_cells.get_access<sycl::access::mode::read>(cgh);
+            auto a_data =
+                b_data.template get_access<sycl::access::mode::read>(cgh);
 
+            cgh.parallel_for<class _ppmd_zero_append_data>(
+                sycl::range<1>(npart_new), [=](sycl::id<1> idx) {
+                    PPMD::INT cellx = a_cells[idx];
+                    // atomically get the layer
+                    sycl::atomic_ref<int, sycl::memory_order::relaxed,
+                                     sycl::memory_scope::device>
+                        element_atomic(s_npart_cell[cellx]);
+                    const int layerx = element_atomic.fetch_add(1);
+
+                    for (int cx = 0; cx < ncomp; cx++) {
+                        d_cell_dat_ptr[cellx][cx][layerx] =
+                            a_data[cx * npart_new + idx];
+                    }
+                });
+        });
     } else {
-    }
+        this->sycl_target.queue.submit([&](sycl::handler &cgh) {
+            auto a_cells = b_cells.get_access<sycl::access::mode::read>(cgh);
 
-    this->sycl_target.queue.wait();
+            cgh.parallel_for<class _ppmd_zero_append_data>(
+                sycl::range<1>(npart_new), [=](sycl::id<1> idx) {
+                    PPMD::INT cellx = a_cells[idx];
+                    // atomically get the layer
+                    sycl::atomic_ref<int, sycl::memory_order::relaxed,
+                                     sycl::memory_scope::device>
+                        element_atomic(s_npart_cell[cellx]);
+                    const int layerx = element_atomic.fetch_add(1);
+
+                    for (int cx = 0; cx < ncomp; cx++) {
+                        d_cell_dat_ptr[cellx][cx][layerx] = ((T)0);
+                    }
+                });
+        });
+    }
 }
 
 } // namespace PPMD
