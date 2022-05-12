@@ -11,7 +11,7 @@ class Mesh {
 
   public:
     Mesh(int cell_count) : cell_count(cell_count){};
-    int get_cell_count() { return this->cell_count; };
+    inline int get_cell_count() { return this->cell_count; };
 };
 
 class Domain {

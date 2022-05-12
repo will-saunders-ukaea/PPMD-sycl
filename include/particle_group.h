@@ -58,25 +58,25 @@ class ParticleGroup {
     }
     ~ParticleGroup() {}
 
-    void add_particle_dat(ParticleDatShPtr<PPMD::REAL> particle_dat);
-    void add_particle_dat(ParticleDatShPtr<PPMD::INT> particle_dat);
+    inline void add_particle_dat(ParticleDatShPtr<PPMD::REAL> particle_dat);
+    inline void add_particle_dat(ParticleDatShPtr<PPMD::INT> particle_dat);
 
-    void add_particles();
-    template <typename U> void add_particles(U particle_data);
-    void add_particles_local(ParticleSet &particle_data);
+    inline void add_particles();
+    template <typename U> inline void add_particles(U particle_data);
+    inline void add_particles_local(ParticleSet &particle_data);
 
-    int get_npart_local() { return this->npart_local; }
+    inline int get_npart_local() { return this->npart_local; }
 
-    ParticleDatShPtr<PPMD::REAL> &operator[](PPMD::Sym<PPMD::REAL> sym) {
+    inline ParticleDatShPtr<PPMD::REAL> &operator[](PPMD::Sym<PPMD::REAL> sym) {
         return this->particle_dats_real.at(sym);
     };
-    ParticleDatShPtr<PPMD::INT> &operator[](PPMD::Sym<PPMD::INT> sym) {
+    inline ParticleDatShPtr<PPMD::INT> &operator[](PPMD::Sym<PPMD::INT> sym) {
         return this->particle_dats_int.at(sym);
     };
 };
 
-void ParticleGroup::add_particle_dat(
-    ParticleDatShPtr<PPMD::REAL> particle_dat) {
+inline void
+ParticleGroup::add_particle_dat(ParticleDatShPtr<PPMD::REAL> particle_dat) {
     this->particle_dats_real[particle_dat->sym] = particle_dat;
     // Does this dat hold particle positions?
     if (particle_dat->positions) {
@@ -85,7 +85,8 @@ void ParticleGroup::add_particle_dat(
             std::make_shared<PPMD::Sym<PPMD::REAL>>(particle_dat->sym.name);
     }
 }
-void ParticleGroup::add_particle_dat(ParticleDatShPtr<PPMD::INT> particle_dat) {
+inline void
+ParticleGroup::add_particle_dat(ParticleDatShPtr<PPMD::INT> particle_dat) {
     this->particle_dats_int[particle_dat->sym] = particle_dat;
     // Does this dat hold particle cell ids?
     if (particle_dat->positions) {
@@ -95,13 +96,13 @@ void ParticleGroup::add_particle_dat(ParticleDatShPtr<PPMD::INT> particle_dat) {
     }
 }
 
-void ParticleGroup::add_particles(){};
+inline void ParticleGroup::add_particles(){};
 template <typename U>
-void ParticleGroup::add_particles(U particle_data){
+inline void ParticleGroup::add_particles(U particle_data){
 
 };
 
-void ParticleGroup::add_particles_local(ParticleSet &particle_data) {
+inline void ParticleGroup::add_particles_local(ParticleSet &particle_data) {
     // loop over the cells of the new particles and allocate more space in the
     // dats
     for (int cellx = 0; cellx < this->ncell; cellx++) {

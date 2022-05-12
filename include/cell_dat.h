@@ -12,6 +12,10 @@
 
 namespace PPMD {
 
+/*
+ * Container for the data within a single cell stored on the host. Data is
+ * store column wise.
+ */
 template <typename T> class CellDataT {
   private:
   public:
@@ -19,7 +23,7 @@ template <typename T> class CellDataT {
     const int nrow;
     const int ncol;
     std::vector<std::vector<T>> data;
-    CellDataT(SYCLTarget &sycl_target, const int nrow, const int ncol)
+    inline CellDataT(SYCLTarget &sycl_target, const int nrow, const int ncol)
         : sycl_target(sycl_target), nrow(nrow), ncol(ncol) {
         this->data = std::vector<std::vector<T>>(ncol);
         for (int colx = 0; colx < ncol; colx++) {
@@ -27,11 +31,20 @@ template <typename T> class CellDataT {
         }
     }
 
-    std::vector<T> &operator[](int col) { return this->data[col]; }
+    /*
+     *  Subscript operator for cell data. Data should be indexed by column then
+     * row. e.g. CellData cell_data; T value = *cell_data[col][row];
+     */
+    inline std::vector<T> &operator[](int col) { return this->data[col]; }
 };
 
 template <typename T> using CellData = std::shared_ptr<CellDataT<T>>;
 
+/*
+ *  Container that allocates on the device a matrix of fixed size nrow X ncol
+ *  for N cells. Data stored in column major format. i.e. Data order from
+ *  slowest to fastest is: cell, column, row.
+ */
 template <typename T> class CellDatConst {
   private:
     T *d_ptr;
@@ -52,13 +65,25 @@ template <typename T> class CellDatConst {
         this->sycl_target.queue.fill(this->d_ptr, ((T)0), ncells * nrow * ncol);
         this->sycl_target.queue.wait();
     };
+
+    /*
+     * Helper function to index into the stored data. Note column major format.
+     */
     inline int idx(const int cell, const int row, const int col) {
         return (this->stride * cell) + (this->nrow * col + row);
     };
 
+    /*
+     * Get the device pointer for the underlying data. Only accessible on the
+     * device.
+     */
     T *device_ptr() { return this->d_ptr; };
 
-    CellData<T> get_cell(const int cell) {
+    /*
+     * Get the data stored in a provided cell on the host as a CellData
+     * instance.
+     */
+    inline CellData<T> get_cell(const int cell) {
         auto cell_data = std::make_shared<CellDataT<T>>(this->sycl_target,
                                                         this->nrow, this->ncol);
         for (int colx = 0; colx < this->ncol; colx++) {
@@ -70,7 +95,10 @@ template <typename T> class CellDatConst {
         this->sycl_target.queue.wait();
         return cell_data;
     }
-    void set_cell(const int cell, CellData<T> cell_data) {
+    /*
+     *  Set the data in a cell using a CellData instance.
+     */
+    inline void set_cell(const int cell, CellData<T> cell_data) {
         PPMDASSERT(cell_data->nrow >= this->nrow,
                    "CellData as insuffient row count.");
         PPMDASSERT(cell_data->ncol >= this->ncol,
@@ -85,6 +113,11 @@ template <typename T> class CellDatConst {
     }
 };
 
+/*
+ * Store data on each cell where the number of columns required per cell is
+ * constant but the number of rows is variable. Data is stored in a column
+ * major manner with a new device pointer per column.
+ */
 template <typename T> class CellDat {
   private:
     T ***d_ptr;
@@ -112,7 +145,7 @@ template <typename T> class CellDat {
         }
         sycl::free(this->d_ptr, sycl_target.queue);
     };
-    CellDat(SYCLTarget &sycl_target, const int ncells, const int ncol)
+    inline CellDat(SYCLTarget &sycl_target, const int ncells, const int ncol)
         : sycl_target(sycl_target), ncells(ncells), ncol(ncol) {
 
         this->nrow = std::vector<PPMD::INT>(ncells);
@@ -137,7 +170,12 @@ template <typename T> class CellDat {
         this->sycl_target.queue.wait();
     };
 
-    void set_nrow(const PPMD::INT cell, const PPMD::INT nrow_required) {
+    /*
+     * Set the number of rows required in a provided cell. This will realloc if
+     * needed and copy the existing data into the new space. May not shrink the
+     * array if the requested size is smaller than the existing size.
+     */
+    inline void set_nrow(const PPMD::INT cell, const PPMD::INT nrow_required) {
         PPMDASSERT(cell >= 0, "Cell index is negative");
         PPMDASSERT(cell < this->ncells, "Cell index is >= ncells");
         PPMDASSERT(nrow_required >= 0, "Requested number of rows is negative");
@@ -174,7 +212,10 @@ template <typename T> class CellDat {
         }
     }
 
-    CellData<T> get_cell(const int cell) {
+    /*
+     * Get the contents of a provided cell on the host as a CellData instance.
+     */
+    inline CellData<T> get_cell(const int cell) {
 
         auto cell_data = std::make_shared<CellDataT<T>>(
             this->sycl_target, this->nrow[cell], this->ncol);
@@ -187,7 +228,11 @@ template <typename T> class CellDat {
         this->sycl_target.queue.wait();
         return cell_data;
     }
-    void set_cell(const int cell, CellData<T> cell_data) {
+
+    /*
+     * Set the contents of a cell on the device using a CellData instance.
+     */
+    inline void set_cell(const int cell, CellData<T> cell_data) {
         PPMDASSERT(cell_data->nrow >= this->nrow[cell],
                    "CellData as insuffient row count.");
         PPMDASSERT(cell_data->ncol >= this->ncol,
@@ -203,6 +248,12 @@ template <typename T> class CellDat {
             this->sycl_target.queue.wait();
         }
     }
+
+    /*
+     * Get the root device pointer for the data storage. Data can be accessed
+     * on the device in SYCL kernels with access like:
+     *      d[cell_index][column_index][row_index]
+     */
     T ***device_ptr() { return this->d_ptr; };
 };
 

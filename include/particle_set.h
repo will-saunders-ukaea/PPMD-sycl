@@ -36,27 +36,27 @@ class ParticleSet {
         }
     };
 
-    ColumnMajorRowAccessor<std::vector, PPMD::REAL>
+    inline ColumnMajorRowAccessor<std::vector, PPMD::REAL>
     operator[](Sym<PPMD::REAL> sym) {
         return ColumnMajorRowAccessor<std::vector, PPMD::REAL>{values_real[sym],
                                                                this->npart};
     };
-    ColumnMajorRowAccessor<std::vector, PPMD::INT>
+    inline ColumnMajorRowAccessor<std::vector, PPMD::INT>
     operator[](Sym<PPMD::INT> sym) {
         return ColumnMajorRowAccessor<std::vector, PPMD::INT>{values_int[sym],
                                                               this->npart};
     };
 
-    std::vector<PPMD::REAL> &get(Sym<PPMD::REAL> const &sym) {
+    inline std::vector<PPMD::REAL> &get(Sym<PPMD::REAL> const &sym) {
         return values_real[sym];
     };
-    std::vector<PPMD::INT> &get(Sym<PPMD::INT> const &sym) {
+    inline std::vector<PPMD::INT> &get(Sym<PPMD::INT> const &sym) {
         return values_int[sym];
     };
-    bool contains(Sym<PPMD::REAL> const &sym) {
+    inline bool contains(Sym<PPMD::REAL> const &sym) {
         return (this->values_real.count(sym) > 0);
     }
-    bool contains(Sym<PPMD::INT> const &sym) {
+    inline bool contains(Sym<PPMD::INT> const &sym) {
         return (this->values_int.count(sym) > 0);
     }
 };

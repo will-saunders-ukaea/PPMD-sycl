@@ -15,9 +15,9 @@ int main(int argc, char **argv) {
     CellDat<PPMD::REAL> c_particle_pos(sycl_target, cell_count, 2);
 
     ParticleSpec particle_spec{ParticleProp(Sym<PPMD::REAL>("P"), 2, true),
-                               ParticleProp(Sym<PPMD::REAL>("V"), 3),
+                               //ParticleProp(Sym<PPMD::REAL>("V"), 3),
                                ParticleProp(Sym<PPMD::INT>("CELL_ID"), 1, true),
-                               ParticleProp(Sym<PPMD::INT>("ID"), 1)
+                               //ParticleProp(Sym<PPMD::INT>("ID"), 1)
                                };
 
     ParticleGroup A(domain, particle_spec, sycl_target);

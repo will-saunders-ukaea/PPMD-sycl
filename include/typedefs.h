@@ -11,8 +11,8 @@ namespace PPMD {
 #define PPMDASSERT(expr, msg)                                                  \
     PPMD::ppmd_assert(#expr, expr, __FILE__, __LINE__, msg)
 
-void ppmd_assert(const char *expr_str, bool expr, const char *file, int line,
-                 const char *msg) {
+inline void ppmd_assert(const char *expr_str, bool expr, const char *file,
+                        int line, const char *msg) {
     if (!expr) {
         std::cerr << "PPMD Assertion error:\t" << msg << "\n"
                   << "Expected value:\t" << expr_str << "\n"

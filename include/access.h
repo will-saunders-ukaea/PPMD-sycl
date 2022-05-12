@@ -16,7 +16,7 @@ class ColumnMajorColumnAccessor {
     ColumnMajorColumnAccessor(T<U> &base, const int &stride, const int &rowx)
         : base(base), stride(stride), rowx(rowx){};
 
-    U &operator[](const int &colx) {
+    inline U &operator[](const int &colx) {
         return this->base[colx * this->stride + this->rowx];
     };
 };
@@ -31,7 +31,7 @@ class ColumnMajorRowAccessor {
     ColumnMajorRowAccessor(T<U> &base, const int &stride)
         : base(base), stride(stride){};
 
-    ColumnMajorColumnAccessor<T, U> operator[](const int &rowx) {
+    inline ColumnMajorColumnAccessor<T, U> operator[](const int &rowx) {
         return ColumnMajorColumnAccessor<T, U>{this->base, this->stride, rowx};
     };
 };
@@ -47,7 +47,7 @@ template <typename T> class RawPointerColumnMajorColumnAccessor {
                                         const int rowx)
         : d_ptr(d_ptr), stride(stride), rowx(rowx){};
 
-    T &operator[](const int &colx) {
+    inline T &operator[](const int &colx) {
         return d_ptr[colx * this->stride + this->rowx];
     };
 };
@@ -61,7 +61,7 @@ template <typename T> class RawPointerColumnMajorRowAccessor {
     RawPointerColumnMajorRowAccessor(T *d_ptr, const int stride)
         : d_ptr(d_ptr), stride(stride){};
 
-    RawPointerColumnMajorColumnAccessor<T> operator[](const int rowx) {
+    inline RawPointerColumnMajorColumnAccessor<T> operator[](const int rowx) {
         return RawPointerColumnMajorColumnAccessor<T>{this->d_ptr, this->stride,
                                                       rowx};
     };
@@ -84,7 +84,8 @@ template <typename T> class Accessor {
         : d_ptr(d_ptr), mode(mode), stride(stride) {}
 
     // T &operator[](int index) const { return this->d_ptr[index]; };
-    RawPointerColumnMajorRowAccessor<T> operator[](const int rowx) const {
+    inline RawPointerColumnMajorRowAccessor<T>
+    operator[](const int rowx) const {
         return RawPointerColumnMajorRowAccessor<T>(this->d_ptr, this->stride,
                                                    rowx);
     };
