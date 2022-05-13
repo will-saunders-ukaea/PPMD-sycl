@@ -7,8 +7,8 @@ DPCPP:=dpcpp -DGPU_SELECTOR=0
 
 HIPSYCL_CUDA:=syclcc -DRESTRICT=__restrict --hipsycl-platform=cuda --hipsycl-gpu-arch=sm_60 --cuda-path=$(CUDA_HOME) -DGPU_SELECTOR=1
 
-#SYCL:=$(HIPSYCL)
-SYCL:=$(HIPSYCL_CUDA)
+SYCL:=$(HIPSYCL)
+#SYCL:=$(HIPSYCL_CUDA)
 CFLAGS:=-I../include $(MPI_CFLAGS)
 
 
