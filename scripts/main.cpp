@@ -93,7 +93,6 @@ int main(int argc, char **argv) {
 
     sycl_target.queue.wait();
 
-    */
 
     std::cout << "---------------" << std::endl;
 
@@ -111,4 +110,6 @@ int main(int argc, char **argv) {
     }
 
     return 0;
+
+    */
 }

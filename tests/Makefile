@@ -5,10 +5,12 @@ LIBS:=
 HIPSYCL:=syclcc --hipsycl-targets=omp -DGPU_SELECTOR=0
 DPCPP:=dpcpp -DGPU_SELECTOR=0
 
-HIPSYCL_CUDA:=syclcc -DRESTRICT=__restrict --hipsycl-platform=cuda --hipsycl-gpu-arch=sm_60 --cuda-path=$(CUDA_HOME) -DGPU_SELECTOR=1
+# HIPSYCL_CUDA:=syclcc -DRESTRICT=__restrict --hipsycl-platform=cuda --hipsycl-gpu-arch=sm_60 --cuda-path=$(CUDA_HOME) -DGPU_SELECTOR=1
+# HIPSYCL_CUDA:=syclcc -DRESTRICT=__restrict --hipsycl-targets=cuda-nvcxx --hipsycl-nvcxx=/opt/spack/linux-ubuntu22.04-cascadelake/gcc-11.2.0/nvhpc-22.3-x2yra3dinsnxmaaviwi6ftbpaukbzpen/Linux_x86_64/22.3/compilers/bin/nvc++ -DGPU_SELECTOR=1
+HIPSYCL_CUDA:=syclcc -DRESTRICT=__restrict --hipsycl-targets=cuda-nvcxx -DGPU_SELECTOR=1
 
-SYCL:=$(HIPSYCL)
-#SYCL:=$(HIPSYCL_CUDA)
+#SYCL:=$(HIPSYCL)
+SYCL:=$(HIPSYCL_CUDA)
 CFLAGS:=-I../include $(MPI_CFLAGS)
 
 
