@@ -1,6 +1,6 @@
 #include <CL/sycl.hpp>
 #include <catch2/catch.hpp>
-#include <ppmd.h>
+#include <ppmd.hpp>
 #include <random>
 using namespace PPMD;
 

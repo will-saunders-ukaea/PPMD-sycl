@@ -4,11 +4,11 @@
 #include <CL/sycl.hpp>
 #include <memory>
 
-#include "access.h"
-#include "compute_target.h"
-#include "particle_set.h"
-#include "particle_spec.h"
-#include "typedefs.h"
+#include "access.hpp"
+#include "compute_target.hpp"
+#include "particle_set.hpp"
+#include "particle_spec.hpp"
+#include "typedefs.hpp"
 
 namespace PPMD {
 
@@ -100,7 +100,6 @@ inline void ParticleDatT<T>::append_particle_data(const int npart_new,
     // copy here.
     const size_t size_npart_new = static_cast<size_t>(npart_new);
     int *s_npart_cell = this->s_npart_cell;
-    const int ncell = this->ncell;
     const int ncomp = this->ncomp;
     T ***d_cell_dat_ptr = this->cell_dat.device_ptr();
 

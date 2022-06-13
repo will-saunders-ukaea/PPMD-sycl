@@ -1,7 +1,7 @@
 #ifndef _PPMD_DOMAIN
 #define _PPMD_DOMAIN
 
-#include "typedefs.h"
+#include "typedefs.hpp"
 
 namespace PPMD {
 

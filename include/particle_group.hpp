@@ -7,13 +7,13 @@
 #include <mpi.h>
 #include <string>
 
-#include "access.h"
-#include "compute_target.h"
-#include "domain.h"
-#include "particle_dat.h"
-#include "particle_set.h"
-#include "particle_spec.h"
-#include "typedefs.h"
+#include "access.hpp"
+#include "compute_target.hpp"
+#include "domain.hpp"
+#include "particle_dat.hpp"
+#include "particle_set.hpp"
+#include "particle_spec.hpp"
+#include "typedefs.hpp"
 
 namespace PPMD {
 

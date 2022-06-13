@@ -4,7 +4,7 @@
 #include <CL/sycl.hpp>
 #include <mpi.h>
 
-#include "typedefs.h"
+#include "typedefs.hpp"
 
 using namespace cl;
 

@@ -1,7 +1,7 @@
 #ifndef _PPMD_ACCESS
 #define _PPMD_ACCESS
 
-#include "typedefs.h"
+#include "typedefs.hpp"
 
 namespace PPMD {
 

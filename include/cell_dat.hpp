@@ -5,10 +5,10 @@
 #include <memory>
 #include <vector>
 
-#include "access.h"
-#include "compute_target.h"
-#include "domain.h"
-#include "typedefs.h"
+#include "access.hpp"
+#include "compute_target.hpp"
+#include "domain.hpp"
+#include "typedefs.hpp"
 
 namespace PPMD {
 

@@ -1,6 +1,6 @@
 #include <CL/sycl.hpp>
 #include <catch2/catch.hpp>
-#include <ppmd.h>
+#include <ppmd.hpp>
 using namespace PPMD;
 
 TEST_CASE("test_cell_dat_const_1") {

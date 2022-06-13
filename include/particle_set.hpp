@@ -6,10 +6,10 @@
 #include <string>
 #include <vector>
 
-#include "access.h"
-#include "compute_target.h"
-#include "particle_spec.h"
-#include "typedefs.h"
+#include "access.hpp"
+#include "compute_target.hpp"
+#include "particle_spec.hpp"
+#include "typedefs.hpp"
 
 namespace PPMD {
 

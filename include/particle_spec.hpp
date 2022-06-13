@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-#include "typedefs.h"
+#include "typedefs.hpp"
 
 namespace PPMD {
 
