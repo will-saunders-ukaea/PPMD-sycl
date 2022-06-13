@@ -4,6 +4,7 @@
 #include <CL/sycl.hpp>
 #include <mpi.h>
 
+#include "communication.hpp"
 #include "typedefs.hpp"
 
 using namespace cl;
@@ -16,9 +17,10 @@ class SYCLTarget {
     sycl::device device;
     sycl::queue queue;
     MPI_Comm comm;
+    CommPair comm_pair;
 
     SYCLTarget(){};
-    SYCLTarget(const int gpu_device, MPI_Comm comm) {
+    SYCLTarget(const int gpu_device, MPI_Comm comm) : comm_pair(comm_pair) {
         if (gpu_device > 0) {
             try {
                 this->device = sycl::device(sycl::gpu_selector());
@@ -39,6 +41,8 @@ class SYCLTarget {
         this->comm = comm;
     }
     ~SYCLTarget() {}
+
+    void free() { comm_pair.free(); }
 };
 
 } // namespace PPMD
